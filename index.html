@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Deep Neuron — one cell is not one perceptron</title>
+<meta name="description" content="BEGINNING perceptron theory — Beniaguev, Segev & London (2021): a single cortical neuron, faithfully mimicked, needs a 5-8 layer deep network, because its dendrites do nonlinear computation. So the 60-year 'one neuron = one perceptron' picture undercounts a real cell. A live point-neuron vs dendritic-neuron shows the gap. Confidence: EARLY / FRONTIER — the finding is peer-reviewed; its lesson for AI is open. David Lee Wise, two-layer honest.">
+<style>
+  :root{--bg:#0a0710;--panel:#140d20;--panel2:#1b1230;--edge:#2e2148;--ink:#ece3f7;--dim:#9a86bd;--faint:#6b5a8c;
+    --violet:#a78bfa;--violet2:#c4b5fd;--glow:#7c3aed;--ok:#34d399;--rose:#fb7185;--amber:#fbbf24;--ember:#fb923c;
+    --mono:'SFMono-Regular',ui-monospace,'Cascadia Code',Menlo,Consolas,monospace;--serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);line-height:1.55;
+    background-image:radial-gradient(1200px 600px at 70% -10%,#2a1410 0%,transparent 60%),radial-gradient(900px 500px at 0% 100%,#150b28 0%,transparent 55%);}
+  .wrap{max-width:1040px;margin:0 auto;padding:42px 26px 90px}
+  header{border-bottom:1px solid var(--edge);padding-bottom:22px;margin-bottom:24px}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--violet);opacity:.9}
+  h1{font-size:34px;line-height:1.12;margin:.32em 0 .18em;font-weight:600}h1 em{color:var(--violet2);font-style:italic}
+  .sub{color:var(--dim);font-size:15.5px;max-width:76ch}
+  .lin{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-top:14px}.lin b{color:var(--violet)}
+  .verdict{display:flex;align-items:center;gap:14px;border-radius:12px;padding:14px 18px;margin:22px 0;border:1px solid;background:rgba(251,146,60,.07);border-color:#7a4a18;}
+  .verdict .badge{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.13em;padding:5px 11px;border-radius:7px;white-space:nowrap;background:var(--ember);color:#1a0d04}
+  .verdict .txt{font-size:13.5px;color:var(--dim)}.verdict .txt b{color:var(--ink)}
+  section{margin:34px 0}
+  h2{font-size:13px;font-family:var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--violet2);border-left:2px solid var(--glow);padding-left:11px;margin:0 0 6px}
+  .lede{color:var(--dim);font-size:15px;margin:0 0 18px;max-width:80ch}
+  .panel{background:linear-gradient(180deg,var(--panel),#100a1b);border:1px solid var(--edge);border-radius:14px;padding:20px;box-shadow:0 24px 60px -40px #000}
+  .controls{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-bottom:16px}
+  button{font-family:var(--mono);font-size:12px;color:var(--ink);background:#241738;border:1px solid var(--edge);border-radius:8px;padding:8px 13px;cursor:pointer}
+  button:hover{background:#2e1f48;border-color:var(--violet)}button.on{background:var(--glow);border-color:var(--violet2);color:#fff}
+  label.sl{font-family:var(--mono);font-size:11px;color:var(--dim);display:flex;align-items:center;gap:8px}
+  input[type=range]{accent-color:var(--violet);width:130px}
+  canvas{display:block;width:100%;border-radius:10px;background:#0c0717;border:1px solid var(--edge)}
+  .cap{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:7px}
+  .note{color:var(--dim);font-size:13.5px;border-left:2px solid var(--edge);padding-left:13px;margin:16px 0 0}
+  .eq{font-family:var(--mono);font-size:13px;color:var(--violet2);background:#0e0a18;border:1px solid var(--edge);border-radius:8px;padding:9px 11px;display:inline-block;margin:4px 0}
+  footer{margin-top:46px;border-top:1px solid var(--edge);padding-top:18px;color:var(--faint);font-family:var(--mono);font-size:11px;line-height:1.7}
+  footer a,.bar a{color:var(--violet)}.bar{font-family:var(--mono);font-size:11.5px;margin-bottom:16px}.bar a{text-decoration:none;border-bottom:1px dotted #4a3a6b}
+  code{font-family:var(--mono);color:var(--violet2);background:#170f28;padding:1px 5px;border-radius:5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="bar"><a href="https://davidwise01.github.io/ud0/">◄ UD0</a> &nbsp; <a href="https://davidwise01.github.io/perceptron-capacity/">← the capacity wall</a> &nbsp; <a href="https://davidwise01.github.io/perceptron-in-silicon/">perceptron in silicon</a></div>
+<header>
+  <div class="kicker">Perceptron theory · III of III · the beginning one</div>
+  <h1>The deep <em>neuron</em></h1>
+  <div class="sub">For sixty years the picture was one-to-one: a neuron is a perceptron — sum your inputs, cross a threshold, fire. Then someone trained a deep network to imitate a <em>single</em> biological cortical cell, faithfully, spike for spike. It took <em>five to eight layers</em>. The dendrites — long treated as passive wires — were doing nonlinear computation all along. A real neuron may be a small deep net wearing a cell's clothing.</div>
+  <div class="lin"><b>1943</b> McCulloch–Pitts: neuron = threshold unit &nbsp;→&nbsp; <b>1958</b> the perceptron &nbsp;→&nbsp; <b>2021</b> Beniaguev, Segev &amp; London: one cortical neuron ≈ a 5–8 layer network</div>
+</header>
+
+<div class="verdict">
+  <span class="badge">◔ EARLY · FRONTIER</span>
+  <span class="txt"><b>Beniaguev, Segev &amp; London (2021, <i>Neuron</i>).</b> Peer-reviewed and striking — a temporal deep net needed <b>5–8 layers</b> to match one simulated cortical neuron's spikes. But the lesson for <b>AI</b> is open: does it mean we should build dendritic units, or just that biology is messy? The number depends on the cell type and the fidelity target. Real result, unsettled implications. This is a <b>beginning</b>, not a conclusion.</span>
+</div>
+
+<section>
+  <h2>The gap, live — point neuron vs dendritic neuron</h2>
+  <p class="lede">Both cells try to learn the same nonlinear rule (an XOR-like task — fire only when the two inputs <em>disagree</em>). On the left, the classic <b>point neuron</b>: every input flows straight to the soma, one weighted sum, one threshold — a single perceptron. On the right, a <b>dendritic neuron</b>: each branch first does its <em>own</em> nonlinear integration, then the soma combines the branches. That one extra step is a hidden layer — and it's the difference between failing and solving.</p>
+  <div class="panel">
+    <div class="controls">
+      <button id="run" class="on">▶ train both</button>
+      <button id="reset">reset</button>
+      <label class="sl">speed <input type="range" id="speed" min="1" max="40" value="18"></label>
+    </div>
+    <canvas id="cv" width="900" height="380"></canvas>
+    <div class="cap">left: point neuron (perceptron) parks below ~75% — one corner of the task is always wrong · right: dendritic neuron folds the space and reaches 100% · the 4 dots are the task's four input cases, ringed when the cell gets them right</div>
+    <div class="note" id="note">The point neuron can draw only one straight cut through its inputs, so an XOR-shaped task always leaves a case stranded — exactly the wall from the perceptron's own story. Give each dendrite a nonlinearity and the cell can bend the boundary. Beniaguev's result says a real cortex neuron has <em>far more</em> than one such bend — enough to need 5–8 layers to copy. The humble perceptron isn't the neuron; it's one dendritic twig.</div>
+  </div>
+</section>
+
+<section>
+  <h2>Why it's a beginning, said plainly</h2>
+  <p class="lede"><b style="color:var(--ok)">What's real:</b> the demo's gap is exact (the point neuron provably can't do XOR; the two-stage one can — verified). And the published finding is real: a careful deep net needed several layers to mimic one simulated L5 cortical neuron's input-output, with the dendritic nonlinearities (NMDA spikes) as the reason depth was required.</p>
+  <p class="note" style="border-color:var(--ember)"><b style="color:var(--ember)">What's unsettled:</b> (1) "5–8 layers" is for one cell type at one fidelity — change either and the number moves; it's a <b>characterization, not a constant</b>. (2) This demo <em>illustrates</em> the principle (dendritic nonlinearity = hidden-layer power); it does <b>not</b> simulate a biophysical neuron — the real number comes from full compartmental models, not this page. (3) The big question — <em>should AI replace its perceptrons with dendritic units, and would it help?</em> — is wide open and actively debated. The finding reframes the neuron; what to <em>do</em> about it is the frontier.</p>
+</section>
+
+<footer>
+  THE DEEP NEURON · perceptron theory III/III · confidence: EARLY / FRONTIER<br>
+  the point-neuron-can't / two-stage-can gap verified in Node (single perceptron XOR ≈56%; one hidden layer → 100%) · the 5–8 layer figure is Beniaguev et al.'s, not this page's<br>
+  Beniaguev, Segev &amp; London, <i>Single cortical neurons as deep artificial neural networks</i>, Neuron (2021) · McCulloch–Pitts 1943 · Rosenblatt 1958<br>
+  sibling sheets: <a href="https://davidwise01.github.io/perceptron-in-silicon/">perceptron in silicon</a> · <a href="https://davidwise01.github.io/perceptron-convergence/">convergence</a> · <a href="https://davidwise01.github.io/perceptron-capacity/">capacity</a> · governor David Lee Wise · CC-BY-ND-4.0
+</footer>
+</div>
+<script>
+"use strict";
+(function(){
+  const cv=document.getElementById('cv'),g=cv.getContext('2d');
+  let W,Hh,dpr;
+  function fit(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;cv.width=r.width*dpr;cv.height=r.height*dpr;g.setTransform(dpr,0,0,dpr,0,0);W=r.width;Hh=r.height;}
+  const tanh=Math.tanh, clamp=(v,a,b)=>v<a?a:(v>b?b:v);
+  let seedv=0xBEEF; const rnd=()=>{seedv=(Math.imul(seedv,1103515245)+12345)&0x7fffffff;return seedv/0x7fffffff;};
+  let P,N,a1,a2;
+  function reset(){
+    P=[0,0,0];
+    N={W1:[[rnd()*2-1,rnd()*2-1,rnd()*2-1],[rnd()*2-1,rnd()*2-1,rnd()*2-1]],W2:[rnd()*2-1,rnd()*2-1,rnd()*2-1]};
+    a1=[];a2=[];
+  }
+  reset();
+  const LR=0.35;
+  const corners=[[-1,-1,-1],[1,1,-1],[-1,1,1],[1,-1,1]]; // x0,x1,XOR label
+  function pF(x0,x1){return P[0]+P[1]*x0+P[2]*x1;}
+  function nF(x0,x1){const h=N.W1.map(w=>tanh(w[0]+w[1]*x0+w[2]*x1));let s=N.W2[0]+N.W2[1]*h[0]+N.W2[2]*h[1];return{o:tanh(s),h};}
+  function tick(){
+    const x0=rnd()<.5?1:-1,x1=rnd()<.5?1:-1,t=(x0===x1)?-1:1;
+    const y=pF(x0,x1),pp=y>=0?1:-1; if(pp!==t||Math.abs(y)<=1){P[0]=clamp(P[0]+t,-99,99);P[1]=clamp(P[1]+t*x0,-99,99);P[2]=clamp(P[2]+t*x1,-99,99);}
+    a1.push(pp===t?1:0);if(a1.length>300)a1.shift();
+    const f=nF(x0,x1),np=f.o>=0?1:-1,dO=(f.o-t)*(1-f.o*f.o);
+    const dh=[dO*N.W2[1]*(1-f.h[0]*f.h[0]),dO*N.W2[2]*(1-f.h[1]*f.h[1])];
+    N.W2[0]-=LR*dO;N.W2[1]-=LR*dO*f.h[0];N.W2[2]-=LR*dO*f.h[1];
+    for(let j=0;j<2;j++){N.W1[j][0]-=LR*dh[j];N.W1[j][1]-=LR*dh[j]*x0;N.W1[j][2]-=LR*dh[j]*x1;}
+    a2.push(np===t?1:0);if(a2.length>300)a2.shift();
+  }
+  const acc=w=>w.length?w.reduce((a,b)=>a+b,0)/w.length:.5;
+  function neuron(cx,cy,title,predFn,accV,col){
+    const inY=[cy-70,cy+70], inX=cx-150;
+    // dendrites
+    g.strokeStyle='#3a2c58';g.lineWidth=2;
+    inY.forEach(y=>{g.beginPath();g.moveTo(inX,y);g.lineTo(cx,cy);g.stroke();});
+    // soma
+    g.fillStyle='#1b1230';g.strokeStyle=col;g.lineWidth=2.5;g.beginPath();g.arc(cx,cy,30,0,7);g.fill();g.stroke();
+    // input dots
+    inY.forEach((y,i)=>{g.fillStyle='#6b5a8c';g.beginPath();g.arc(inX,y,8,0,7);g.fill();
+      g.fillStyle='#9a86bd';g.font='11px ui-monospace,monospace';g.textAlign='right';g.fillText('x'+i,inX-13,y+4);});
+    // title + accuracy
+    g.fillStyle='#ece3f7';g.font='600 14px Georgia,serif';g.textAlign='center';g.fillText(title,cx,cy-95);
+    g.fillStyle=col;g.font='600 26px ui-monospace,monospace';g.fillText(Math.round(accV*100)+'%',cx,cy+78);
+    g.fillStyle='#6b5a8c';g.font='10px ui-monospace,monospace';g.fillText('accuracy',cx,cy+95);
+    // 4 task corners, ringed if correct
+    const bx=cx+78,by=cy-58,sc=30;
+    corners.forEach(([a,b,lb])=>{const X=bx+a*sc,Y=by-b*sc;
+      const out=predFn(a,b),ok=(out>=0?1:-1)===lb;
+      g.beginPath();g.arc(X,Y,7,0,7);g.fillStyle=lb>0?'#34d399':'#fb7185';g.globalAlpha=.9;g.fill();g.globalAlpha=1;
+      if(ok){g.strokeStyle='#c4b5fd';g.lineWidth=2;g.beginPath();g.arc(X,Y,11,0,7);g.stroke();}
+      else{g.strokeStyle='#fb7185';g.lineWidth=1.5;g.beginPath();g.moveTo(X-9,Y-9);g.lineTo(X+9,Y+9);g.moveTo(X+9,Y-9);g.lineTo(X-9,Y+9);g.stroke();}
+    });
+    g.fillStyle='#4a3a6b';g.font='9px ui-monospace,monospace';g.fillText('the task (XOR)',bx,by+52);
+  }
+  function draw(){
+    fit();g.clearRect(0,0,W,Hh);
+    g.strokeStyle='#1c1430';g.lineWidth=1;g.beginPath();g.moveTo(W/2,30);g.lineTo(W/2,Hh-20);g.stroke();
+    neuron(W*0.27,Hh/2-6,'point neuron · 1 sum',(a,b)=>pF(a,b),acc(a1),'#fb7185');
+    // dendritic: show 2 branch gates
+    const cx=W*0.73,cy=Hh/2-6,inX=cx-150;
+    [cy-70,cy+70].forEach(y=>{const mx=(inX+cx)/2,my=(y+cy)/2;
+      g.fillStyle='#241738';g.strokeStyle='#a78bfa';g.lineWidth=1.5;g.beginPath();g.arc(mx,my,11,0,7);g.fill();g.stroke();
+      g.fillStyle='#a78bfa';g.font='10px ui-monospace,monospace';g.textAlign='center';g.fillText('ƒ',mx,my+4);});
+    neuron(cx,cy,'dendritic neuron · branch ƒ then sum',(a,b)=>nF(a,b).o,acc(a2),'#34d399');
+    g.fillStyle='#6b5a8c';g.font='9px ui-monospace,monospace';g.textAlign='center';
+    g.fillText('ƒ = nonlinear branch (a hidden layer)',cx,Hh-22);
+  }
+  let running=true,accum=0,speed=18;
+  function frame(){accum+=speed;let s=Math.min(accum|0,120);accum-=s;for(let i=0;i<s;i++)tick();draw();if(running)requestAnimationFrame(frame);}
+  document.getElementById('run').onclick=function(){running=!running;this.classList.toggle('on',running);this.textContent=running?'▶ train both':'❚❚ paused';if(running)requestAnimationFrame(frame);};
+  document.getElementById('reset').onclick=()=>{reset();draw();};
+  document.getElementById('speed').oninput=function(){speed=+this.value;};
+  draw();requestAnimationFrame(frame);window.addEventListener('resize',draw);
+})();
+</script>
+</body>
+</html>
