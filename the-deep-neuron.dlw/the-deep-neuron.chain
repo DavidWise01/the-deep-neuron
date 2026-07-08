@@ -1,0 +1,9 @@
+ROOT0-DLW-CHAIN-v1
+index : 969
+slug  : the-deep-neuron
+seal  : 28ffaaf3ddf7dfd44aa6aae03bb1f87faae6a63fdad347ee7851dbd353532db9
+prev  : f1d4efe2a597a1155974117e20bca6dff2b581a5cdf6d903698b09ac67223836
+link  : e52d2dcad37a72337062d06a7bbf44a235aa7ade39c23e7893e1714186e8bfd0
+head  : 3447d3a0533aaf1e29a8bdc67a9774884fb3ae9dbc8a17064b7a008ca3c4ec90
+
+— the tether: link = sha256(index|slug|seal|prev). the chain head commits to the whole corpus.
